@@ -47,9 +47,65 @@ exports.getAgents = async (req, res) => {
     res.status(404).json({ error: error.message });
   }
 };
+exports.assignAgent = async (req, res) => {
+  try {
+    const { ticketId, assignedAgentId } = req.body;
+
+    // Fetch the ticket by ID
+    const ticket = await Ticket.findById(ticketId);
+    const agent = await Agent.findById(assignedAgentId);
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    // Assign the agent to the ticket
+    ticket.assignedTo = agent.name;
+    ticket.status = 'Assigned';
+
+    // Save the updated ticket
+    await ticket.save();
+
+    res.status(200).json(ticket);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+exports.resolveTicket = async (req, res) => {
+  try {
+    const { ticketId } = req.body;
+
+    // Fetch the ticket by ID
+    const ticket = await Ticket.findById(ticketId);
+
+    if (!ticket) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    // Resolve the ticket
+    ticket.status = 'Resolved';
+    ticket.resolvedOn = new Date();
+
+    // Save the updated ticket
+    await ticket.save();
+
+    res.status(200).json(ticket);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
 exports.createTicket = async (req, res) => {
     try {
+        const assignedAgent = await Agent.findById(req.body.assignedTo);
+    
+        if (!assignedAgent) {
+          return res.status(404).json({ error: 'Assigned agent not found' });
+        }
         const newTicket = new Ticket(req.body);
+        newTicket.assignedTo=assignedAgent.name;
         await newTicket.save();
         res.status(201).json(newTicket);
     } catch (error) {
