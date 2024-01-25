@@ -98,23 +98,32 @@ exports.resolveTicket = async (req, res) => {
 };
 
 exports.createTicket = async (req, res) => {
-    try {
-      if(req.body.assignedTo){
-        const assignedAgent = await Agent.findById(req.body.assignedTo);
-    
-        if (!assignedAgent) {
-          return res.status(404).json({ error: 'Assigned agent not found' });
-        }
+  try {
+    let assignedAgentName = '';
+
+    if (req.body.assignedTo) {
+      const assignedAgent = await Agent.findById(req.body.assignedTo);
+
+      if (!assignedAgent) {
+        return res.status(404).json({ error: 'Assigned agent not found' });
       }
-        const newTicket = new Ticket(req.body);
-        newTicket.assignedTo=assignedAgent.name;
-        await newTicket.save();
-        res.status(201).json(newTicket);
-    } catch (error) {
-        console.log(error);
-        res.status(409).json({error: error.message});
+
+      assignedAgentName = assignedAgent.name;
+    }
+
+    const newTicket = new Ticket({
+      ...req.body,
+      assignedTo: assignedAgentName,
+    });
+
+    await newTicket.save();
+    res.status(201).json(newTicket);
+  } catch (error) {
+    console.log(error);
+    res.status(409).json({ error: error.message });
   }
 };
+
 
 exports.createAgent = async (req, res) => {
     try {
