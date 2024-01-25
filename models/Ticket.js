@@ -17,10 +17,10 @@ const ticketSchema = mongoose.Schema(
         type: String, 
         required: true 
     },
-    assignedTo: { 
+    assignedTo: {
         type: String, 
-        required: false 
-    },
+        required: false,
+      },
     status: { 
         type: String, 
         required: true,

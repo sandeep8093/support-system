@@ -4,33 +4,33 @@ const Ticket = require("../models/Ticket");
 
 exports.getAllTicket = async (req, res) => {
   try {
-    const { status = "", assignedTo = "", severity = "", type = "", sortBy = ""} = req.query;
+    const { status = "", assignedTo = "", severity = "", type = "", sortBy = "" } = req.query;
     const filter = {};
 
     if (status !== "") {
-    filter.status = status;
+      filter.status = status;
     }
 
     if (assignedTo !== "") {
-    filter.assignedTo = assignedTo;
+      filter.assignedTo = assignedTo;
     }
 
     if (severity !== "") {
-    filter.severity = severity;
+      filter.severity = severity;
     }
 
     if (type !== "") {
-    filter.type = type;
+      filter.type = type;
     }
 
     const sort = {};
 
     if (sortBy === "resolvedOn") {
-    sort.resolvedOn = 1; 
+      sort.resolvedOn = 1;
     } else if (sortBy === "dateCreated") {
-    sort.dateCreated = 1; 
+      sort.dateCreated = 1;
     }
-    const savedTickets = await Ticket.find(filter).sort(sort);
+    const savedTickets = await Ticket.find(filter).sort(sort)
 
     res.status(200).json(savedTickets);
   } catch (error) {
@@ -99,11 +99,13 @@ exports.resolveTicket = async (req, res) => {
 
 exports.createTicket = async (req, res) => {
     try {
+      if(req.body.assignedTo){
         const assignedAgent = await Agent.findById(req.body.assignedTo);
     
         if (!assignedAgent) {
           return res.status(404).json({ error: 'Assigned agent not found' });
         }
+      }
         const newTicket = new Ticket(req.body);
         newTicket.assignedTo=assignedAgent.name;
         await newTicket.save();
